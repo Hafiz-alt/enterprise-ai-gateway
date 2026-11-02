@@ -1,0 +1,53 @@
+[package]
+name = "ai-gateway"
+version = "0.1.0"
+edition = "2021"
+description = "Ultra-low-latency Enterprise AI Gateway — reverse proxy with semantic cache for LLM providers"
+
+[[bin]]
+name = "ai-gateway"
+path = "src/main.rs"
+
+[[bin]]
+name = "pre_download"
+path = "src/bin/pre_download.rs"
+
+[dependencies]
+# --- Web Framework & Async Runtime ---
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+
+# --- HTTP Client (for forwarding to upstream LLM providers) ---
+# `stream` feature is included now so Phase 2 SSE work is zero-friction.
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "stream",
+] }
+
+# --- Serialization ---
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# --- In-Memory Cache ---
+# `future` feature enables the async-compatible cache required by Tokio.
+moka = { version = "0.12", features = ["future"] }
+
+# --- SSE Streaming (Phase 2) ---
+async-stream = "0.3"
+futures-util = "0.3"
+
+# --- Semantic Vector Caching (Phase 3) ---
+fastembed = "3"
+
+# --- OpenTelemetry & Langfuse Distributed Tracing (Phase 4) ---
+opentelemetry = { version = "0.27", features = ["trace"] }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio", "trace"] }
+opentelemetry-otlp = { version = "0.27", features = ["http-proto", "reqwest-client"] }
+tracing-opentelemetry = "0.28"
+base64 = "0.22"
+
+# --- Observability ---
+tower-http = { version = "0.6", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
